@@ -1,12 +1,23 @@
-<div id="<%= dom_id blog %>">
-  <div>
-    <strong>Title:</strong>
-    <%= blog.title %>
-  </div>
+<div class="blog-card">
+  <div class="blog-card-body">
+    <h5 class="blog-card-title">
+      <%= link_to blog.title, blog, class: "text-decoration-none text-dark" %>
+    </h5>
 
-  <div>
-    <strong>Body:</strong>
-    <%= blog.body %>
-  </div>
+    <p class="blog-card-text">
+      <%= truncate(blog.body, length: 120) %>
+    </p>
 
+    <div class="blog-card-meta">
+      <small class="blog-card-author"><%= blog.user&.email %></small>
+      <div class="d-flex gap-2 align-items-center">
+        <span class="badge <%= blog.published? ? 'bg-success' : 'bg-warning text-dark' %>">
+          <%= blog.published? ? "Published" : "Draft" %>
+        </span>
+        <% if blog.published? %>
+          <span class="badge bg-secondary"><%= pluralize(blog.comments.count, "comment") %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>

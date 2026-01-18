@@ -1,16 +1,20 @@
-<p style="color: green"><%= notice %></p>
-
-<% content_for :title, "Blogs" %>
-
-<h1>Blogs</h1>
-
-<div id="blogs">
-  <% @blogs.each do |blog| %>
-    <%= render blog %>
-    <p>
-      <%= link_to "Show this blog", blog %>
-    </p>
+<div class="blog-header">
+  <div>
+    <h1 class="mb-1">Discover Stories</h1>
+    <p class="text-muted">Read inspiring articles from our community</p>
+  </div>
+  <% if user_signed_in? %>
+    <%= link_to "Write New Post", new_blog_path, class: "btn btn-primary" %>
   <% end %>
 </div>
 
-<%= link_to "New blog", new_blog_path %>
+<% if @blogs.any? %>
+  <div class="blog-grid">
+    <%= render partial: "blog", collection: @blogs %>
+  </div>
+<% else %>
+  <div class="alert alert-info text-center py-5">
+    <h5>No posts yet</h5>
+    <p class="text-muted mb-0">Be the first to share your story</p>
+  </div>
+<% end %>

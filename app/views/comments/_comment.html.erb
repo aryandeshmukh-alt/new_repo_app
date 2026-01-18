@@ -1,0 +1,14 @@
+<div class="comment-card">
+  <div class="d-flex justify-content-between align-items-start mb-2">
+    <strong class="comment-author"><%= comment.user.email %></strong>
+    <small class="comment-time"><%= time_ago_in_words(comment.created_at) %> ago</small>
+  </div>
+  <p class="comment-body"><%= simple_format(comment.body) %></p>
+  <% if comment.user == current_user %>
+    <%= button_to "Delete",
+          blog_comment_path(blog, comment),
+          method: :delete,
+          data: { confirm: "Are you sure?" },
+          class: "btn btn-sm btn-outline-danger" %>
+  <% end %>
+</div>

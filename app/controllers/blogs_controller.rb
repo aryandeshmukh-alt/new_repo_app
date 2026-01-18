@@ -1,70 +1,87 @@
 class BlogsController < ApplicationController
-  before_action :set_blog, only: %i[ show edit update destroy ]
+  skip_before_action :authenticate_user!, only: [:index, :show, :published]
+  before_action :authenticate_user!, only: [:drafts]
 
-  # GET /blogs or /blogs.json
+  before_action :set_blog, only: [:show, :edit, :update, :destroy, :publish]
+
   def index
-    @blogs = Blog.all
+    @blogs = policy_scope(Blog)
+              .includes(:comments, :user)
+              .order(created_at: :desc)
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @blogs }
+    end
   end
 
-  # GET /blogs/1 or /blogs/1.json
   def show
+    authorize @blog if user_signed_in?
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @blog }
+    end
   end
 
-  # GET /blogs/new
+  def published
+    @blogs = Blog.published.includes(:comments, :user)
+    render :index
+  end
+
+  def drafts
+    @blogs = current_user.blogs.drafts.includes(:comments, :user).order(created_at: :desc)
+    render :index
+  end
+
   def new
     @blog = Blog.new
   end
 
-  # GET /blogs/1/edit
   def edit
+    authorize @blog
   end
 
-  # POST /blogs or /blogs.json
   def create
-    @blog = Blog.new(blog_params)
+    @blog = current_user.blogs.build(blog_params)
 
-    respond_to do |format|
-      if @blog.save
-        format.html { redirect_to @blog, notice: "Blog was successfully created." }
-        format.json { render :show, status: :created, location: @blog }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @blog.errors, status: :unprocessable_entity }
-      end
+    if @blog.save
+      PublishBlogJob.set(wait: 1.hour).perform_later(@blog.id)
+      redirect_to @blog, notice: "Blog created"
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /blogs/1 or /blogs/1.json
   def update
-    respond_to do |format|
-      if @blog.update(blog_params)
-        format.html { redirect_to @blog, notice: "Blog was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @blog }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @blog.errors, status: :unprocessable_entity }
-      end
+    authorize @blog
+
+    if @blog.update(blog_params)
+      redirect_to @blog, notice: "Blog updated"
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /blogs/1 or /blogs/1.json
   def destroy
-    @blog.destroy!
+    authorize @blog
+    @blog.destroy
+    redirect_to blogs_path, notice: "Blog deleted"
+  end
 
-    respond_to do |format|
-      format.html { redirect_to blogs_path, notice: "Blog was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
-    end
+  def publish
+    authorize @blog
+    PublishBlogService.new(@blog).call
+    redirect_to @blog, notice: "Blog published"
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_blog
-      @blog = Blog.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def blog_params
-      params.expect(blog: [ :title, :body ])
-    end
+  def set_blog
+    @blog = Blog.find(params[:id])
+  end
+
+  def blog_params
+    params.require(:blog).permit(:title, :body)
+  end
 end

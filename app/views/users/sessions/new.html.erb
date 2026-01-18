@@ -1,0 +1,64 @@
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-content">
+      <div class="auth-form-wrapper">
+        <div class="auth-header mb-5">
+          <h1 class="auth-title">Welcome Back</h1>
+          <p class="auth-subtitle">Sign in to your account to continue</p>
+        </div>
+
+        <%= render "users/shared/error_messages", resource: resource %>
+
+        <%= form_with(model: resource, as: resource_name, url: session_path(resource_name), local: true) do |f| %>
+          <div class="mb-4">
+            <%= f.label :email, "Email Address", class: "form-label fw-600" %>
+            <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control form-control-lg auth-input", placeholder: "your.email@example.com" %>
+          </div>
+
+          <div class="mb-2">
+            <%= f.label :password, "Password", class: "form-label fw-600" %>
+            <%= f.password_field :password, autocomplete: "current-password", class: "form-control form-control-lg auth-input", placeholder: "••••••••••" %>
+          </div>
+
+          <div class="mb-4">
+            <small class="text-muted">
+              <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-decoration-none auth-link" %>
+            </small>
+          </div>
+
+          <% if devise_mapping.rememberable? %>
+            <div class="mb-4 form-check">
+              <%= f.check_box :remember_me, class: "form-check-input" %>
+              <%= f.label :remember_me, "Keep me signed in", class: "form-check-label" %>
+            </div>
+          <% end %>
+
+          <div class="d-grid gap-2 mb-4">
+            <%= f.submit "Sign In", class: "btn btn-primary btn-lg auth-btn" %>
+          </div>
+
+          <div class="auth-divider mb-4">
+            <span>Don't have an account?</span>
+          </div>
+
+          <div class="text-center">
+            <%= render "users/shared/links", resource: resource %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="auth-illustration">
+        <div class="illustration-content">
+          <div class="illustration-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <h3>Welcome to Blog</h3>
+          <p>Share your thoughts, inspire others, and build your audience.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
